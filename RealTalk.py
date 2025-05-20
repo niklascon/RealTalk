@@ -6,156 +6,188 @@ import threading
 import customtkinter
 import smtplib
 import time
+import requests
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from tkinter import messagebox
 
-# Initialize text-to-speech (Optional)
+from flask import Flask, render_template, request, jsonify
+
+recognition_status = False
+KEYWORDS = ["hallo", "exit", "hilfe"]
+
+# --- Flask Webserver ---
+app = Flask(__name__)
+last_result = {"keyword": "", "text": ""}
+
+@app.route('/')
+def welcome():
+    return render_template('welcome.html')
+
+@app.route('/current')
+def current():
+    return render_template('current.html', last_result=last_result)
+
+@app.route('/overview')
+def overview():
+    return render_template('overview.html')
+
+@app.route('/api/log', methods=['POST'])
+def log_result():
+    data = request.json
+    last_result["keyword"] = data.get("keyword", "")
+    last_result["text"] = data.get("text", "")
+    return jsonify({"status": "ok"})
+
+def start_flask():
+    app.run(debug=False, use_reloader=False)
+
+# --- Sprache ---
 def speak(text):
     engine = pyttsx3.init()
     engine.say(text)
     engine.runAndWait()
 
-# Global variable to store keywords
-KEYWORDS = ["input keywords..."]
+def post_to_web(keyword, text):
+    try:
+        requests.post("http://localhost:5000/api/log", json={
+            "keyword": keyword,
+            "text": text
+        })
+    except Exception as e:
+        print("Fehler beim Web-Post:", e)
 
-# Custom Output Redirector
+def send_email_to_self(subject, body):
+    sender_email = "maxi.schw@icloud.com"
+    receiver_email = "maxi.schw@icloud.com"
+    app_specific_password = "jwhj-safe-ojwh-evvf"
+
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP_SSL("smtp.mail.me.com", 465) as server:
+            time.sleep(1)
+            server.login(sender_email, app_specific_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+            print("E-Mail gesendet.")
+    except Exception as e:
+        print(f"E-Mail-Fehler: {e}")
+
+def recognize_speech():
+    recognizer = sr.Recognizer()
+    microphone = sr.Microphone()
+
+    print("Rauschen kalibrieren...")
+    with microphone as source:
+        recognizer.adjust_for_ambient_noise(source, duration=1)
+
+    print("Spracherkennung gestartet.")
+
+    while True:
+        try:
+            with microphone as source:
+                print("Höre...")
+                audio = recognizer.listen(source)
+
+            recognized_text = recognizer.recognize_google(audio, language="de-DE,en-US").lower()
+            print(f"Du hast gesagt: {recognized_text}")
+
+            for keyword in KEYWORDS:
+                if keyword in recognized_text:
+                    print(f"Keyword '{keyword}' erkannt.")
+                    speak(f"Du hast das Schlüsselwort {keyword} gesagt.")
+                    send_email_to_self("Selbst-Erinnerung", f"Erkannt: {recognized_text}")
+                    post_to_web(keyword, recognized_text)
+                    update_status(True)
+
+                    if keyword == "exit":
+                        print("Beende Programm.")
+                        return
+
+        except sr.UnknownValueError:
+            print("Konnte Sprache nicht erkennen.")
+        except sr.RequestError as e:
+            print(f"Spracherkennungsfehler: {e}")
+
+def update_status(status):
+    global recognition_status
+    recognition_status = status
+    if status:
+        status_label.configure(text="🟢", fg_color="transparent")
+    else:
+        status_label.configure(text="🔴", fg_color="transparent")
+
+def start_recognition():
+    update_status(False)
+    threading.Thread(target=recognize_speech, daemon=True).start()
+
+def update_keywords():
+    global KEYWORDS
+    input_text = keywords_entry.get().strip()
+    if input_text:
+        KEYWORDS = [kw.strip().lower() for kw in input_text.split(",") if kw.strip()]
+        messagebox.showinfo("Aktualisiert", f"Neue Schlüsselwörter: {', '.join(KEYWORDS)}")
+    else:
+        messagebox.showwarning("Fehler", "Bitte gültige Schlüsselwörter eingeben.")
+
 class OutputRedirector:
     def __init__(self, text_widget):
         self.text_widget = text_widget
 
     def write(self, text):
         self.text_widget.insert(tk.END, text)
-        self.text_widget.see(tk.END)  # Scroll to the latest output
+        self.text_widget.see(tk.END)
 
     def flush(self):
-        pass  # Required for compatibility with sys.stdout
+        pass
 
-def send_email_to_self(subject, body):
-    # Your iCloud email and app-specific password
-    sender_email = "maxi.schw@icloud.com"
-    receiver_email = "maxi.schw@icloud.com"  # Sending to yourself
-    app_specific_password = "jwhj-safe-ojwh-evvf"
-
-    # Set up the email content
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = subject
-
-    # Email body
-    msg.attach(MIMEText(body, 'plain'))
-
-    # Connect to iCloud SMTP server
-    try:
-        with smtplib.SMTP_SSL("smtp.mail.me.com", 465) as server:
-            time.sleep(1) 
-            server.login(sender_email, app_specific_password)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-            print("Email sent successfully!")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-
-# Speech recognition function
-def recognize_speech():
-    recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
-
-    print("Adjusting for ambient noise... Please wait.")
-    with microphone as source:
-        recognizer.adjust_for_ambient_noise(source, duration=1)
-    print("Listening for keywords...")
-
-    while True:
-        try:
-            with microphone as source:
-                print("Listening...")
-                audio = recognizer.listen(source)
-    
-            # Recognize speech using Google Web Speech API
-            recognized_text = recognizer.recognize_google(audio, language="de-DE,en-US").lower()
-            print(f"You said: {recognized_text}")
-
-            # Check for keywords
-            for keyword in KEYWORDS:
-                if keyword in recognized_text:
-                    print(f"Keyword '{keyword}' detected!")
-                    speak(f"You said the keyword {keyword}.")
-                    send_email_to_self("Self Reminder", "This is a test message to myself!")
-                    
-                    if keyword == "exit":
-                        print("Exiting program.")
-                        return
-
-        except sr.UnknownValueError:
-            print("Sorry, could not understand the audio.")
-        except sr.RequestError as e:
-            print(f"Could not request results from the speech recognition service; {e}")
-
-# Start speech recognition in a separate thread
-def start_recognition():
-    recognition_thread = threading.Thread(target=recognize_speech)
-    recognition_thread.daemon = True
-    recognition_thread.start()
-
-# Function to update keywords
-def update_keywords():
-    global KEYWORDS
-    keywords_input = keywords_entry.get().strip()
-    if keywords_input:
-        KEYWORDS = [kw.strip().lower() for kw in keywords_input.split(",") if kw.strip()]
-        messagebox.showinfo("Keywords Updated", f"Keywords have been updated to: {', '.join(KEYWORDS)}")
-    else:
-        messagebox.showwarning("Input Error", "Please enter valid keywords.")
-
-# GUI Setup
 def setup_gui():
     root = customtkinter.CTk()
-    root.title("Speech Recognition Output")
+    root.title("Spracherkennung")
 
-    customtkinter.set_appearance_mode("System")
+    customtkinter.set_appearance_mode("dark")
     customtkinter.set_default_color_theme("dark-blue")
-    # Position the window in the top-right corner
-    window_width, window_height = 400, 200
-    screen_width = root.winfo_screenwidth()
-    x_position = screen_width - window_width - 10
-    y_position = 10
-    root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
 
-    # Disable resizing
-    root.resizable(True, True)
+    root.geometry("450x300")
+    root.resizable(False, False)
 
-    # Output text box
-    text_box = customtkinter.CTkTextbox(root, wrap=tk.WORD, height=10, width=50)
-    text_box.configure(font=("Sans Serif", 12, "bold"))
-    text_box.pack(fill=tk.BOTH, expand=True, pady=(5, 0))
-
-    # Redirect print statements to the text box
+    text_box = customtkinter.CTkTextbox(root, wrap=tk.WORD, height=12, width=60)
+    text_box.configure(font=("Helvetica", 13))
+    text_box.pack(padx=15, pady=(15, 10), fill=tk.BOTH, expand=True)
     sys.stdout = OutputRedirector(text_box)
 
-    # Frame to hold input and button
-    input_frame = customtkinter.CTkFrame(master=root, fg_color= "transparent")
-    input_frame.pack(pady = 20)
+    input_frame = customtkinter.CTkFrame(master=root, fg_color="#2A2D2E", corner_radius=12)
+    input_frame.pack(padx=15, pady=(0, 15), fill=tk.X)
+
+    label = customtkinter.CTkLabel(input_frame, text="Keywords (kommagetrennt):", font=("Helvetica", 14, "bold"))
+    label.pack(anchor="w", padx=10, pady=(10, 5))
 
     global keywords_entry
-    keywords_entry = customtkinter.CTkEntry(input_frame, width=200, fg_color= "transparent", font=("Sans Serif", 12, "bold") )
-    keywords_entry.insert(0, ", ".join(KEYWORDS))  # Pre-fill with current keywords
-    keywords_entry.pack(pady = 5)
+    keywords_entry = customtkinter.CTkEntry(input_frame, width=300, placeholder_text="z.B. hallo, exit")
+    keywords_entry.insert(0, ", ".join(KEYWORDS))
+    keywords_entry.pack(side=tk.LEFT, padx=(10,5), pady=(0,15))
 
+    global status_label
+    status_label = customtkinter.CTkLabel(input_frame, text="🔴", font=("Helvetica", 24))
+    status_label.pack(side=tk.LEFT, padx=(5, 15), pady=(0,15))
 
-    # Update button
-    update_button = customtkinter.CTkButton(input_frame, text="Update Keywords", command=update_keywords)
-    update_button.configure(font=("Sans Serif", 12, "bold"))
-    update_button.pack(pady = 5)
+    start_button = customtkinter.CTkButton(
+        input_frame,
+        text="▶️",
+        width=50,
+        font=("Helvetica", 18),
+        command=start_recognition,
+        fg_color="#1F6AA5",
+        hover_color="#1C5F91"
+    )
+    start_button.pack(side=tk.LEFT, padx=(0, 15), pady=(0,15))
 
-    # Start recognition button
-    start_button = customtkinter.CTkButton(input_frame, text="Start Recognition", command=start_recognition)
-    start_button.configure(font=("Sans Serif", 12, "bold"))
-    start_button.pack(pady = 5)
-
-    # Run the GUI event loop
     root.mainloop()
 
-# Run the GUI setup
 if __name__ == "__main__":
+    threading.Thread(target=start_flask, daemon=True).start()
     setup_gui()
