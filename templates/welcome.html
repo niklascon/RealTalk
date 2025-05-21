@@ -1,134 +1,132 @@
 {% extends "index.html" %}
 {% block content %}
-<div style="max-width: 1100px; margin: auto; padding: 20px; font-family: 'Segoe UI', sans-serif; color: #000;">
+<div style="max-width: 1200px; margin: auto; padding: 40px 20px; font-family: 'Segoe UI', sans-serif; color: #1a1a1a;">
 
-  <!-- Titelblock -->
-  <div style="background-color: #e8f0fe; padding: 30px; border-radius: 12px; text-align: center;
-              box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <h1 style="color: #000;">Willkommen bei RealTalk</h1>
-    <p style="font-size: 1.1em; line-height: 1.7;">
-      Diese App hilft dir, Social-Engineering-Angriffe zu erkennen und dich aktiv davor zu schützen.
+  <!-- Hero Section -->
+  <section style="text-align: center; padding: 60px 20px; background: linear-gradient(to right, #e3f2fd, #fce4ec); border-radius: 20px;">
+    <h1 style="font-size: 2.8em; font-weight: bold; margin-bottom: 15px;">Willkommen bei <span style="color: #1976d2;">RealTalk</span></h1>
+    <p style="font-size: 1.2em; max-width: 700px; margin: 0 auto; line-height: 1.7;">
+      Deine App zur Erkennung von Social-Engineering-Angriffen – mit Spracherkennung, Alarmierung und KI-gestütztem Schutz.
     </p>
+  </section>
+
+  <!-- Bild -->
+  <div style="text-align: center; margin: 40px 0;">
+    <img src="{{ url_for('static', filename='pictures/bild.png') }}"
+         alt="Teamfoto oder Symbolbild"
+         style="width: 260px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);" />
   </div>
 
-  <div style="display: flex; justify-content: center; margin: 30px 0;">
-  <img src="{{ url_for('static', filename='pictures/bild.png') }}"
-       alt="Mark Weber"
-       style="width: 240px; height: auto; border-radius: 16px;
-              box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);" />
-</div>
-
-  <!-- Zwei Blöcke nebeneinander -->
-  <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 30px;">
-    <!-- Block 1 -->
-    <div style="flex: 1; min-width: 300px; background-color: #f9f9f9; padding: 25px; border-radius: 12px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-      <h2 style="color: #000;">🔍 Was ist Social Engineering?</h2>
+  <!-- Info Cards -->
+  <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px;">
+    <div style="background-color: #f9f9f9; padding: 25px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.06);">
+      <h2>🔍 Was ist Social Engineering?</h2>
       <p style="line-height: 1.6;">
-        Social Engineering ist der Versuch, Menschen durch psychologische Tricks zur Preisgabe sensibler Informationen zu bewegen – z. B. durch Phishing oder gefälschte Anrufe.
+        Angriffe, bei denen Menschen psychologisch manipuliert werden – z. B. durch Phishing, Vishing oder gefälschte Identitäten.
       </p>
     </div>
-
-    <!-- Block 2 -->
-    <div style="flex: 1; min-width: 300px; background-color: #f1f8e9; padding: 25px; border-radius: 12px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-      <h2 style="color: #000;">🛡️ Was kann die App?</h2>
-      <ul style="line-height: 1.6;">
-        <li>Spracherkennung mit Schlüsselwörtern</li>
-        <li>Alarmierung per E-Mail</li>
-        <li>Benutzeroberfläche zur Überwachung</li>
-        <li>Lerninhalte zum Schutz vor Angriffen</li>
+    <div style="background-color: #e8f5e9; padding: 25px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.06);">
+      <h2>🛡️ Was kann die App?</h2>
+      <ul style="line-height: 1.8; padding-left: 20px;">
+        <li>Live-Spracherkennung</li>
+        <li>Keyword-basierte Warnungen</li>
+        <li>Automatische E-Mail-Benachrichtigung</li>
+        <li>Aufklärungsinhalte gegen Angriffe</li>
       </ul>
     </div>
-  </div>
-
-
+  </section>
 
   <!-- Tabelle -->
-  <div style="background-color: #fff3e0; padding: 25px; border-radius: 12px; margin-top: 30px;
-              box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <h2 style="color: #000;">📊 Typische Social-Engineering-Angriffe</h2>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 15px; color: #000;">
+  <section style="background-color: #fff8e1; padding: 30px; border-radius: 16px; margin-top: 50px; box-shadow: 0 6px 20px rgba(0,0,0,0.06);">
+    <h2 style="margin-bottom: 20px;">📊 Typische Social-Engineering-Angriffe</h2>
+    <table style="width: 100%; border-collapse: collapse; font-size: 1em;">
       <thead>
-        <tr style="background-color: #ffe0b2;">
-          <th style="padding: 10px; text-align: left;">Angriffsart</th>
-          <th style="padding: 10px; text-align: left;">Beschreibung</th>
+        <tr style="background-color: #ffe082; color: #000;">
+          <th style="padding: 12px; text-align: left;">Angriffsart</th>
+          <th style="padding: 12px; text-align: left;">Beschreibung</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #ddd;">Phishing</td>
-          <td style="padding: 10px; border-bottom: 1px solid #ddd;">Gefälschte Mails oder Webseiten zur Täuschung</td>
+        <tr style="border-bottom: 1px solid #ccc;">
+          <td style="padding: 12px;">Phishing</td>
+          <td style="padding: 12px;">Täuschung durch E-Mails oder Websites</td>
+        </tr>
+        <tr style="border-bottom: 1px solid #ccc;">
+          <td style="padding: 12px;">Vishing</td>
+          <td style="padding: 12px;">Telefonbetrug mit gefälschter Identität</td>
         </tr>
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #ddd;">Vishing</td>
-          <td style="padding: 10px; border-bottom: 1px solid #ddd;">Telefonische Betrugsversuche mit Fake-Identitäten</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #ddd;">Pretexting</td>
-          <td style="padding: 10px; border-bottom: 1px solid #ddd;">Vortäuschen einer Rolle, z. B. Techniker oder Support</td>
+          <td style="padding: 12px;">Pretexting</td>
+          <td style="padding: 12px;">Vortäuschung einer Rolle, z. B. Support</td>
         </tr>
       </tbody>
     </table>
-  </div>
+  </section>
 
-  <!-- Abschnitt: Deepfakes & Audio-Deepfakes -->
-<div style="background-color: #fce4ec; padding: 25px; border-radius: 12px; margin-top: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); color: #000;">
-  <h2 style="color: #000;">🎭 Deepfakes & Audio-Deepfakes</h2>
-  <p style="line-height: 1.6;">
-    Deepfakes sind KI-generierte Fälschungen von Bild, Video oder Audio, die täuschend echt wirken.
-    Besonders <strong>Audio-Deepfakes</strong> stellen eine neue Gefahr dar: Mit wenigen Sekunden Originalton kann eine Stimme synthetisch nachgeahmt werden – in täuschend echter Qualität.
-  </p>
+  <!-- Deepfake Info -->
+  <section style="background-color: #fce4ec; padding: 30px; border-radius: 16px; margin-top: 50px; box-shadow: 0 6px 20px rgba(0,0,0,0.06);">
+    <h2>🎭 Deepfakes & Audio-Deepfakes</h2>
+    <p style="line-height: 1.7;">
+      Deepfakes imitieren Bild, Ton oder Video mit KI. Besonders <strong>Audio-Deepfakes</strong> können Stimmen täuschend echt nachahmen – mit gefährlichen Folgen.
+    </p>
 
-  <h3 style="margin-top: 20px;">🚨 Gefahr für Social Engineering</h3>
-  <ul style="line-height: 1.6; margin-bottom: 15px;">
-    <li>Fake-Anrufe mit „Chef-Stimme“ (CEO-Fraud)</li>
-    <li>Gefälschte WhatsApp-/Sprachnachrichten von Angehörigen</li>
-    <li>Vertrauensmissbrauch durch Stimme statt Text</li>
-  </ul>
+    <h3 style="margin-top: 25px;">🚨 Neue Angriffsformen</h3>
+    <ul style="line-height: 1.8; padding-left: 20px;">
+      <li>Fake-Anrufe mit gefälschter CEO-Stimme</li>
+      <li>Sprachnachrichten angeblicher Familienmitglieder</li>
+      <li>Missbrauch von Stimme für Vertrauensvorschuss</li>
+    </ul>
 
-  <h3 style="margin-top: 20px;">📊 Aktuelle Zahlen & Studien</h3>
-  <ul style="line-height: 1.6;">
-    <li>2023 wurden in Deutschland über <strong>350 Betrugsfälle</strong> mit KI-Stimmen gemeldet (BKA-Schätzung)</li>
-    <li>Eine Studie von McAfee (2023) zeigt: <strong>70 % der Nutzer</strong> können gefälschte Audionachrichten nicht von echten unterscheiden</li>
-    <li>Bis 2026 werden Deepfake-Angriffe auf Unternehmen laut Gartner <strong>um 500 %</strong> zunehmen</li>
-  </ul>
-
-  <p style="margin-top: 15px;">
-    Unsere App will genau hier ansetzen: Mit Spracherkennung, Alarmierung und Aufklärung gegen diese neue Gefahr.
-  </p>
-</div>
-
+    <h3 style="margin-top: 25px;">📈 Studien & Zahlen</h3>
+    <ul style="line-height: 1.8; padding-left: 20px;">
+      <li><strong>350+</strong> KI-Stimmen-Betrugsfälle 2023 laut BKA</li>
+      <li><strong>70 %</strong> der Menschen erkennen Fake-Audio nicht (McAfee 2023)</li>
+      <li><strong>+500 %</strong> erwartete Zunahme bis 2026 (Gartner)</li>
+    </ul>
+  </section>
 
   <!-- Über uns -->
-  <div style="background-color: #ede7f6; padding: 25px; border-radius: 12px; margin-top: 30px;
-              display: flex; flex-wrap: wrap; gap: 20px; align-items: center;
-              box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-    <div style="flex: 1; min-width: 250px; color: #000;">
-      <h2 style="color: #000;">👨‍💻 Über uns</h2>
-      <p>
-        Ich bin <strong>Julius Müller, Maurice, Maximilian, Niklas und Mark Weber</strong>, Student an der TU Darmstadt im Bereich Informatik.
-        Dieses Projekt wurde entwickelt, um praktische Hilfe beim Schutz vor Social Engineering zu bieten – mit modernen KI-Technologien, echter Spracheingabe und einem Fokus auf IT-Sicherheit.
+  <section style="background-color: #ede7f6; padding: 30px; border-radius: 16px; margin-top: 50px; display: flex; flex-wrap: wrap; align-items: center; gap: 30px; box-shadow: 0 6px 20px rgba(0,0,0,0.06);">
+    <div style="flex: 1; min-width: 260px;">
+      <h2>👨‍💻 Über uns</h2>
+      <p style="line-height: 1.6;">
+        Wir sind <strong>Julius, Maurice, Maximilian, Niklas und Mark</strong>, Studierende der TU Darmstadt mit Fokus auf KI & IT-Sicherheit.
+        Mit RealTalk setzen wir ein Zeichen gegen moderne Betrugsmaschen – technisch fundiert, bewusst gestaltet und einsatzbereit.
       </p>
     </div>
-  </div>
+  </section>
 
 </div>
 
-<!-- Leichte Animation und Hovereffekte -->
+<!-- Hover Animation -->
 <style>
-  div[style*="box-shadow"] {
-    transition: all 0.3s ease-in-out;
+  section {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
-  div[style*="box-shadow"]:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
   }
 
-  h2, h1 {
-    color: #000 !important;
+  h2 {
+    color: #1a1a1a;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+
+  table th, table td {
+    border-bottom: 1px solid #ddd;
+  }
+
+  @media (max-width: 768px) {
+    section {
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2em;
+    }
   }
 </style>
 {% endblock %}
