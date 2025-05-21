@@ -1,0 +1,32 @@
+# Virtuelle Umgebungen
+venv/
+.env
+
+# Python-Bytecode und C-Extensions
+__pycache__/
+*.py[cod]
+*.so
+
+# Distribution/Build-Artefakte
+build/
+dist/
+*.egg-info/
+
+# Mypy Cache
+.mypy_cache/
+
+# Logs
+*.log
+
+# Datenbanken
+*.sqlite3
+
+# macOS
+.DS_Store
+
+# IDEs und Editoren
+.vscode/
+.idea/
+
+# OS-spezifisches
+Thumbs.db
