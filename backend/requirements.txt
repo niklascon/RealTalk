@@ -1,0 +1,10 @@
+Flask
+SpeechRecognition
+pyttsx3
+customtkinter
+pyaudio
+scikit-learn
+numpy
+pandas
+matplotlib
+requests
