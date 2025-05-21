@@ -1,5 +1,23 @@
 {% extends "index.html" %}
 {% block content %}
-<h1>Übersicht</h1>
-<p>Hier wird eine Gesamtübersicht der erkannten Schlüsselwörter dargestellt.</p>
+<h1>Übersicht und Statistik der letzten Anrufe</h1>
+
+<p><strong>Gesamtanzahl der erkannten Anrufe:</strong> {{ stats.total_calls }}</p>
+
+<h2>Keyword-Häufigkeiten</h2>
+<ul>
+    {% for kw, count in stats.keyword_counts.items() %}
+        <li>{{ kw }}: {{ count }}</li>
+    {% endfor %}
+</ul>
+
+<p><strong>Durchschnittliche Wortanzahl pro Anruf:</strong> {{ stats.avg_word_count | round(1) }}</p>
+
+<h2>Anrufe der letzten 7 Tage</h2>
+<ul>
+    {% for day, count in stats.calls_per_day %}
+        <li>{{ day }}: {{ count }} Anrufe</li>
+    {% endfor %}
+</ul>
+
 {% endblock %}

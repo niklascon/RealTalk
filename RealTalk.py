@@ -7,11 +7,16 @@ import customtkinter
 import smtplib
 import time
 import requests
+import webbrowser
+from collections import Counter
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from tkinter import messagebox
 from flask import Flask, render_template, request, jsonify
 from PIL import Image
+
+
+logs = []
 
 recognition_status = False
 stop_recognition_flag = False
@@ -27,18 +32,89 @@ def welcome():
 
 @app.route('/current')
 def current():
-    return render_template('current.html', last_result=last_result)
+    analysis = analyze_last_call(last_result["text"], last_result["keyword"])
+    return render_template('current.html', last_result=last_result, analysis=analysis)
 
 @app.route('/overview')
 def overview():
-    return render_template('overview.html')
+    stats = analyze_logs(logs)
+    return render_template('overview.html', stats=stats)
+
 
 @app.route('/api/log', methods=['POST'])
 def log_result():
     data = request.json
-    last_result["keyword"] = data.get("keyword", "")
-    last_result["text"] = data.get("text", "")
+    keyword = data.get("keyword", "")
+    text = data.get("text", "")
+    timestamp = time.time()
+    last_result["keyword"] = keyword
+    last_result["text"] = text
+
+    logs.append({
+        "keyword": keyword,
+        "text": text,
+        "timestamp": timestamp
+    })
     return jsonify({"status": "ok"})
+
+
+
+def analyze_last_call(text, keyword):
+    words = text.split()
+    word_count = len(words)
+    keyword_count = text.lower().count(keyword.lower()) if keyword else 0
+
+    # Beispiel: Häufigkeit der Keywords in Text
+    keyword_freq = {k: text.lower().count(k) for k in KEYWORDS}
+
+    # Sentiment Dummy (nur beispielhaft)
+    sentiment = "neutral"
+    if "gut" in text.lower() or "super" in text.lower():
+        sentiment = "positiv"
+    elif "schlecht" in text.lower() or "problem" in text.lower():
+        sentiment = "negativ"
+
+    return {
+        "word_count": word_count,
+        "keyword_count": keyword_count,
+        "keyword_freq": keyword_freq,
+        "sentiment": sentiment,
+    }
+
+
+from collections import Counter
+from datetime import datetime
+
+
+def analyze_logs(logs):
+    total_calls = len(logs)
+    all_texts = " ".join(log["text"] for log in logs).lower()
+
+    # Gesamt-Häufigkeit der Keywords über alle Logs
+    keyword_counts = Counter()
+    for kw in KEYWORDS:
+        keyword_counts[kw] = all_texts.count(kw.lower())
+
+    # Durchschnittliche Wortanzahl pro Erkennung
+    word_counts = [len(log["text"].split()) for log in logs if log["text"]]
+    avg_word_count = sum(word_counts) / len(word_counts) if word_counts else 0
+
+    # Beispiel: Anrufe pro Tag (für die letzten 7 Tage)
+    calls_per_day = Counter()
+    for log in logs:
+        day = datetime.fromtimestamp(log["timestamp"]).strftime("%Y-%m-%d")
+        calls_per_day[day] += 1
+
+    # Sortieren der Tage nach Datum absteigend, nur letzte 7 Tage
+    last_7_days = sorted(calls_per_day.items(), reverse=True)[:7]
+
+    return {
+        "total_calls": total_calls,
+        "keyword_counts": dict(keyword_counts),
+        "avg_word_count": avg_word_count,
+        "calls_per_day": last_7_days
+    }
+
 
 def start_flask():
     app.run(debug=False, use_reloader=False)
@@ -197,6 +273,12 @@ def blink_border():
             time.sleep(0.5)
     threading.Thread(target=_blink, daemon=True).start()
 
+
+def open_website():
+    # Ersetze den String durch deine gewünschte URL
+    webbrowser.open_new_tab("http://127.0.0.1:5000")
+
+
 def setup_gui():
     global root, border_frames
     root = customtkinter.CTk()
@@ -205,66 +287,78 @@ def setup_gui():
     customtkinter.set_appearance_mode("dark")
     customtkinter.set_default_color_theme("dark-blue")
 
-    root.geometry("450x480")
-    root.resizable(False, False)
+    root.geometry("460x520")  # Startgröße
+    root.resizable(True, True)  # Fenster dynamisch skalierbar
 
     global green_img, red_img, feedback_image_label, status_label
 
-    green_img = customtkinter.CTkImage(light_image=Image.open("static/pictures/green_smiley.png"), size=(64, 64))
-    red_img = customtkinter.CTkImage(light_image=Image.open("static/pictures/red_smiley.png"), size=(64, 64))
+    green_img = customtkinter.CTkImage(
+        light_image=Image.open("static/pictures/green_smiley.png"),
+        size=(64, 64)
+    )
+    red_img = customtkinter.CTkImage(
+        light_image=Image.open("static/pictures/red_smiley.png"),
+        size=(64, 64)
+    )
 
-    # 4 schmale Rahmen rund ums Fenster: links, rechts, oben, unten
-    border_frames = []
-    border_frames.append(customtkinter.CTkFrame(root, width=10, fg_color="transparent"))
-    border_frames[-1].pack(side="left", fill="y")
-    border_frames.append(customtkinter.CTkFrame(root, width=10, fg_color="transparent"))
-    border_frames[-1].pack(side="right", fill="y")
-    border_frames.append(customtkinter.CTkFrame(root, height=10, fg_color="transparent"))
-    border_frames[-1].pack(side="top", fill="x")
-    border_frames.append(customtkinter.CTkFrame(root, height=10, fg_color="transparent"))
-    border_frames[-1].pack(side="bottom", fill="x")
+    border_frame = customtkinter.CTkFrame(root, fg_color="#2a2a2a", corner_radius=12)
+    border_frame.pack(padx=12, pady=12, fill=tk.BOTH, expand=True)
 
-    # Textbox zur Ausgabe
-    text_box = customtkinter.CTkTextbox(root, wrap=tk.WORD, height=12, width=60)
-    text_box.configure(font=("Helvetica", 13))
-    text_box.pack(padx=15, pady=(10, 10), fill=tk.BOTH, expand=True)
+    # Textbox etwas größer und flexibel
+    text_box = customtkinter.CTkTextbox(border_frame, wrap=tk.WORD, height=12, width=62)
+    text_box.configure(font=("Helvetica", 14))
+    text_box.pack(padx=20, pady=(15, 10), fill=tk.BOTH, expand=True)
     sys.stdout = OutputRedirector(text_box)
 
-    # Feedback-Bild initial mit grünem Smiley
-    feedback_image_label = customtkinter.CTkLabel(root, text="", image=green_img)
-    feedback_image_label.pack(pady=(0, 10))
+    # Status-Label und Feedback-Bild vertikal, mit getauschter Reihenfolge
+    feedback_frame = customtkinter.CTkFrame(border_frame, fg_color="transparent")
+    feedback_frame.pack(pady=(5, 20))
 
-    # Status-Label (Status-Icon) jetzt direkt im Hauptfenster
-    status_label = customtkinter.CTkLabel(root, text="🟢", font=("Helvetica", 24))
-    status_label.pack(pady=(0, 15))
+    status_label = customtkinter.CTkLabel(feedback_frame, text="🟢", font=("Helvetica", 28))
+    status_label.pack(pady=(0, 5))
+
+    feedback_image_label = customtkinter.CTkLabel(feedback_frame, text="", image=green_img)
+    feedback_image_label.pack()
 
     # --- Button-Leiste ---
-    button_frame = customtkinter.CTkFrame(master=root, fg_color="transparent")
-    button_frame.pack(padx=15, pady=(0, 15))
+    button_frame = customtkinter.CTkFrame(border_frame, fg_color="transparent")
+    button_frame.pack(padx=10, pady=(0, 15))
 
     start_button = customtkinter.CTkButton(
         button_frame,
         text="▶️ Start",
-        width=80,
-        font=("Helvetica", 18),
+        width=90,
+        font=("Helvetica", 18, "bold"),
         command=start_recognition,
         fg_color="#1F6AA5",
         hover_color="#1C5F91"
     )
-    start_button.pack(side=tk.LEFT, padx=(5, 10))
+    start_button.pack(side=tk.LEFT, padx=(5, 12))
 
     stop_button = customtkinter.CTkButton(
         button_frame,
         text="⏹️ Stop",
-        width=80,
-        font=("Helvetica", 18),
+        width=90,
+        font=("Helvetica", 18, "bold"),
         command=stop_recognition,
         fg_color="#A52A2A",
         hover_color="#8B0000"
     )
-    stop_button.pack(side=tk.LEFT, padx=(10, 5))
+    stop_button.pack(side=tk.LEFT, padx=(12, 12))
+
+    web_button = customtkinter.CTkButton(
+        button_frame,
+        text="🌐 Webseite öffnen",
+        width=160,
+        font=("Helvetica", 16, "bold"),
+        command=open_website,
+        fg_color="#006400",
+        hover_color="#005000"
+    )
+    web_button.pack(side=tk.LEFT, padx=(12, 5))
 
     root.mainloop()
+
 
 
 if __name__ == "__main__":

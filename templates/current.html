@@ -2,4 +2,21 @@
 {% block content %}
 <h1>Aktuelle Auswertung</h1>
 <p>Hier kommt die aktuelle Analyse des letzten Gesprächs.</p>
+
+<h2>Letzter Anruf</h2>
+<p><strong>Erkanntes Schlüsselwort:</strong> {{ last_result.keyword }}</p>
+<p><strong>Gesprochener Text:</strong> {{ last_result.text }}</p>
+
+<h2>Analyse</h2>
+<ul>
+    <li>Wortanzahl: {{ analysis.word_count }}</li>
+    <li>Schlüsselwort '{{ last_result.keyword }}' im Text gefunden: {{ analysis.keyword_count }} mal</li>
+    <li>Häufigkeit aller Schlüsselwörter:</li>
+    <ul>
+        {% for kw, count in analysis.keyword_freq.items() %}
+            <li>{{ kw }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+    <li>Stimmung (einfach geschätzt): {{ analysis.sentiment }}</li>
+</ul>
 {% endblock %}
