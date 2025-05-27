@@ -19,4 +19,48 @@
     </ul>
     <li>Stimmung (einfach geschätzt): {{ analysis.sentiment }}</li>
 </ul>
+
+<h2>Häufigkeit der Schlüsselwörter (Grafisch)</h2>
+<canvas id="keywordChart" width="400" height="200"></canvas>
+
+<!-- Chart.js einbinden -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<h2>Häufigkeit der Schlüsselwörter (Grafisch)</h2>
+<canvas id="keywordChart" width="400" height="200"></canvas>
+
+<!-- Chart.js einbinden -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const keywordLabels = [{% for kw in analysis.keyword_freq %}"{{ kw }}"{% if not loop.last %}, {% endif %}{% endfor %}];
+    const keywordCounts = [{% for kw in analysis.keyword_freq %}{{ analysis.keyword_freq[kw] }}{% if not loop.last %}, {% endif %}{% endfor %}];
+
+    const ctx = document.getElementById('keywordChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: keywordLabels,
+            datasets: [{
+                label: 'Anzahl Vorkommen',
+                data: keywordCounts,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+</script>
+
 {% endblock %}

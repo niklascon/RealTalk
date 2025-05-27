@@ -20,7 +20,7 @@ logs = []
 
 recognition_status = False
 stop_recognition_flag = False
-KEYWORDS = ["hallo", "exit", "hilfe"]
+KEYWORDS = ["hallo", "exit", "hilfe", "Scam", "Bank", "Geld", "überweisen", "passwort"]
 
 # --- Flask Webserver ---
 app = Flask(__name__)
@@ -182,7 +182,7 @@ def recognize_speech():
 
                     update_status(True)  # GUI-Update sofort starten
 
-                    speak(f"Du hast das Schlüsselwort {keyword} gesagt.")  # blockiert, aber GUI schon aktualisiert
+                    speak(f"eine mögliche gefahr wurde erkannt, Auffälligkeiten beim Wort {keyword}")  # blockiert, aber GUI schon aktualisiert
                     send_email_to_self("Selbst-Erinnerung", f"Erkannt: {recognized_text}")
                     post_to_web(keyword, recognized_text)
 
@@ -265,13 +265,12 @@ class OutputRedirector:
 def blink_border():
     def _blink():
         for _ in range(4):  # 4x blinken = ca. 2 Sekunden
-            for frame in border_frames:
-                frame.configure(fg_color="red")
+            border_frame.configure(fg_color="red")
             time.sleep(0.5)
-            for frame in border_frames:
-                frame.configure(fg_color="transparent")
+            border_frame.configure(fg_color="#2a2a2a")  # Ursprüngliche Farbe wiederherstellen
             time.sleep(0.5)
     threading.Thread(target=_blink, daemon=True).start()
+
 
 
 def open_website():
@@ -280,7 +279,7 @@ def open_website():
 
 
 def setup_gui():
-    global root, border_frames
+    global root, border_frame
     root = customtkinter.CTk()
     root.title("Spracherkennung")
 

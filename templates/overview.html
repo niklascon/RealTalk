@@ -11,6 +11,9 @@
     {% endfor %}
 </ul>
 
+<!-- Grafik für Keyword-Häufigkeiten -->
+<canvas id="keywordChart" width="400" height="200"></canvas>
+
 <p><strong>Durchschnittliche Wortanzahl pro Anruf:</strong> {{ stats.avg_word_count | round(1) }}</p>
 
 <h2>Anrufe der letzten 7 Tage</h2>
@@ -19,5 +22,57 @@
         <li>{{ day }}: {{ count }} Anrufe</li>
     {% endfor %}
 </ul>
+
+<!-- Grafik für Anrufe der letzten 7 Tage -->
+<canvas id="callsPerDayChart" width="400" height="200"></canvas>
+
+<!-- Chart.js einbinden -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Daten aus Template in JS-Variablen packen
+    const keywordLabels = {{ stats.keyword_counts.keys() | list | tojson }};
+    const keywordData = {{ stats.keyword_counts.values() | list | tojson }};
+
+    const callsDays = {{ stats.calls_per_day | map(attribute=0) | list | tojson }};
+    const callsCounts = {{ stats.calls_per_day | map(attribute=1) | list | tojson }};
+
+    // Keyword Chart
+    const ctxKeywords = document.getElementById('keywordChart').getContext('2d');
+    new Chart(ctxKeywords, {
+        type: 'bar',
+        data: {
+            labels: keywordLabels,
+            datasets: [{
+                label: 'Keyword Vorkommen',
+                data: keywordData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Calls per Day Chart
+    const ctxCalls = document.getElementById('callsPerDayChart').getContext('2d');
+    new Chart(ctxCalls, {
+        type: 'line',
+        data: {
+            labels: callsDays,
+            datasets: [{
+                label: 'Anrufe pro Tag',
+                data: callsCounts,
+                fill: false,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
 
 {% endblock %}
