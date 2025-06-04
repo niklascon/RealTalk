@@ -2,6 +2,7 @@ import whisper
 import pyttsx3
 import pyaudio
 import wave
+import rumps # type: ignore
 import numpy as np
 import tempfile
 import threading
@@ -61,8 +62,9 @@ def recognize_speech(KEYWORDS, update_status, stop_event):
                 for keyword in KEYWORDS:
                     if keyword in recognized_text:
                         print(f"Keyword '{keyword}' erkannt.")
-                        speak(f"Du hast das Schlüsselwort {keyword} gesagt.")
-                        update_status(True)
+                        speak(f"You just said the Keyword {keyword}")
+                        # speak(f"Du hast das Schlüsselwort {keyword} gesagt.")
+                        update_status(True, keyword)
 
                         if keyword == "exit":
                             print("Beende Spracherkennung.")
