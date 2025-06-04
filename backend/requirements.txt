@@ -8,3 +8,7 @@ numpy
 pandas
 matplotlib
 requests
+
+
+rumps 
+pyobjc
