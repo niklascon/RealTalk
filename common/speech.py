@@ -12,13 +12,7 @@ def speak(text):
     engine.say(text)
     engine.runAndWait()
 
-# def post_to_web(keyword, text):
-#    try:
-#        requests.post("http://localhost:5000/api/log", json={"keyword": keyword, "text": text})
-#    except Exception as e:
-#        print("Fehler beim Web-Post:", e)
-
-def record_audio_chunk(seconds=5, sample_rate=16000, channels=1):
+def record_audio_chunk(seconds=3, sample_rate=16000, channels=1):
     chunk = 1024
     format = pyaudio.paInt16
     p = pyaudio.PyAudio()
@@ -29,7 +23,7 @@ def record_audio_chunk(seconds=5, sample_rate=16000, channels=1):
                     input=True,
                     frames_per_buffer=chunk)
 
-    print("🎙️ Aufnahme läuft...")
+    print("🎙")
 
     frames = []
     for _ in range(0, int(sample_rate / chunk * seconds)):
@@ -45,7 +39,7 @@ def record_audio_chunk(seconds=5, sample_rate=16000, channels=1):
 def recognize_speech(KEYWORDS, update_status, stop_event):
     model = whisper.load_model("base")  # oder "tiny", "small" für schnellere Ergebnisse
 
-    print("🧠 Whisper-Spracherkennung gestartet.")
+    print("🧠Spracherkennung gestartet.")
 
     while not stop_event.is_set():
         try:
@@ -62,7 +56,7 @@ def recognize_speech(KEYWORDS, update_status, stop_event):
 
                 result = model.transcribe(temp_wav.name, language="de")
                 recognized_text = result["text"].strip().lower()
-                print(f"Du hast gesagt: {recognized_text}")
+                print(f"{recognized_text}")
 
                 for keyword in KEYWORDS:
                     if keyword in recognized_text:
