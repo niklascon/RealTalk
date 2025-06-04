@@ -8,3 +8,5 @@ numpy
 pandas
 matplotlib
 requests
+openai-whisper
+ffmpeg-python

@@ -1,78 +1,74 @@
-import speech_recognition as sr
+import whisper
 import pyttsx3
-import smtplib
-import time
-import requests
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import pyaudio
+import wave
+import numpy as np
+import tempfile
+import threading
+
 
 def speak(text):
     engine = pyttsx3.init()
     engine.say(text)
     engine.runAndWait()
 
-def post_to_web(keyword, text):
-    try:
-        requests.post("http://localhost:5000/api/log", json={"keyword": keyword, "text": text})
-    except Exception as e:
-        print("Fehler beim Web-Post:", e)
+def record_audio_chunk(seconds=3, sample_rate=16000, channels=1):
+    chunk = 1024
+    format = pyaudio.paInt16
+    p = pyaudio.PyAudio()
 
-def send_email_to_self(subject, body):
-    sender_email = "maxi.schw@icloud.com"
-    receiver_email = "maxi.schw@icloud.com"
-    app_specific_password = "jwhj-safe-ojwh-evvf"
+    stream = p.open(format=format,
+                    channels=channels,
+                    rate=sample_rate,
+                    input=True,
+                    frames_per_buffer=chunk)
 
-    msg = MIMEMultipart()
-    msg['From'] = sender_email
-    msg['To'] = receiver_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
+    print("🎙")
 
-    try:
-        with smtplib.SMTP_SSL("smtp.mail.me.com", 465) as server:
-            time.sleep(1)
-            server.login(sender_email, app_specific_password)
-            server.sendmail(sender_email, receiver_email, msg.as_string())
-            print("E-Mail gesendet.")
-    except Exception as e:
-        print(f"E-Mail-Fehler: {e}")
+    frames = []
+    for _ in range(0, int(sample_rate / chunk * seconds)):
+        data = stream.read(chunk)
+        frames.append(data)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
+
+    return b''.join(frames), sample_rate
 
 def recognize_speech(KEYWORDS, update_status, stop_event):
-    recognizer = sr.Recognizer()
-    microphone = sr.Microphone()
+    model = whisper.load_model("base")  # oder "tiny", "small" für schnellere Ergebnisse
 
-    print("Rauschen kalibrieren...")
-    with microphone as source:
-        recognizer.adjust_for_ambient_noise(source, duration=1)
-
-    print("Spracherkennung gestartet.")
+    print("🧠Spracherkennung gestartet.")
 
     while not stop_event.is_set():
         try:
-            with microphone as source:
-                print("Höre...")
-                audio = recognizer.listen(source, timeout=5)
+            audio_data, sample_rate = record_audio_chunk(seconds=4)
 
-            recognized_text = recognizer.recognize_google(audio, language="de-DE,en-US").lower()
-            print(f"Du hast gesagt: {recognized_text}")
+            # Temporäre WAV-Datei schreiben
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as temp_wav:
+                wf = wave.open(temp_wav.name, 'wb')
+                wf.setnchannels(1)
+                wf.setsampwidth(2)  # 16-bit = 2 bytes
+                wf.setframerate(sample_rate)
+                wf.writeframes(audio_data)
+                wf.close()
 
-            for keyword in KEYWORDS:
-                if keyword in recognized_text:
-                    print(f"Keyword '{keyword}' erkannt.")
-                    speak(f"Du hast das Schlüsselwort {keyword} gesagt.")
-                    send_email_to_self("Selbst-Erinnerung", f"Erkannt: {recognized_text}")
-                    post_to_web(keyword, recognized_text)
-                    update_status(True)
+                result = model.transcribe(temp_wav.name, language="de")
+                recognized_text = result["text"].strip().lower()
+                print(f"{recognized_text}")
 
-                    if keyword == "exit":
-                        print("Beende Spracherkennung.")
-                        stop_event.set()
-                        return
+                for keyword in KEYWORDS:
+                    if keyword in recognized_text:
+                        print(f"Keyword '{keyword}' erkannt.")
+                        speak(f"Du hast das Schlüsselwort {keyword} gesagt.")
+                        update_status(True)
 
-        except sr.UnknownValueError:
-            print("Konnte Sprache nicht erkennen.")
-        except sr.RequestError as e:
-            print(f"Spracherkennungsfehler: {e}")
+                        if keyword == "exit":
+                            print("Beende Spracherkennung.")
+                            stop_event.set()
+                            return
+
         except Exception as e:
-            print(f"Allgemeiner Fehler: {e}")
+            print(f"Fehler bei der Spracherkennung: {e}")
 
