@@ -5,8 +5,9 @@ from common.speech import recognize_speech
 
 
 script_path = os.path.dirname(__file__)
-rt_icon_path = "assets/icons/Realtalk_transparent.png"
-rt_icon = os.path.join(script_path, rt_icon_path)
+rt_icon_path_listening = "assets/icons/Realtalk_transparent_green.png"
+rt_icon_path_paused = "assets/icons/Realtalk_transparent_red.png"
+rt_icon = os.path.join(script_path, rt_icon_path_paused)
 
 KEYWORDS = ["hallo", "exit", "hilfe"]
 
@@ -17,24 +18,22 @@ class MenuBarApp(rumps.App):
 
         super().__init__(
             name="RealTalk",
-            icon=rt_icon_path,
+            icon=rt_icon_path_paused,
             menu=[
                 self.start_item,
                 self.stop_item,
                 None,
-            ],
-            template=True
+            ]
         )
 
         self.listening = False
         self.thread = None
-        self.title = "🔴 Paused..."
         self.stop_event = threading.Event()
 
     def start_listening(self, _):
         self.listening = True
         self.stop_event.clear()
-        self.title = "🟢 Listening..."
+        self.icon = rt_icon_path_listening
 
         self.menu["Start Listening"].title = "🟢 Listening..."
         self.menu["Start Listening"].set_callback(None)
@@ -50,7 +49,7 @@ class MenuBarApp(rumps.App):
     def stop_listening(self, _):
         self.stop_event.set()
         self.listening = False
-        self.title = "🔴 Paused..."
+        self.icon = rt_icon_path_paused
 
         self.menu["Start Listening"].title = "Start Listening"
         self.menu["Start Listening"].set_callback(self.start_listening)
