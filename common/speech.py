@@ -62,7 +62,7 @@ def recognize_speech(KEYWORDS, update_status, stop_event):
                 for keyword in KEYWORDS:
                     if keyword in recognized_text:
                         print(f"Keyword '{keyword}' erkannt.")
-                        speak(f"You just said the Keyword {keyword}")
+                        # speak(f"You just said the Keyword {keyword}")
                         # speak(f"Du hast das Schlüsselwort {keyword} gesagt.")
                         update_status(True, keyword)
 
