@@ -1,8 +1,10 @@
-import rumps # type: ignore 
+import rumps
 import os
 import threading
+import queue
+import tkinter as tk
+from threading import Thread
 from common.speech import recognize_speech
-
 
 script_path = os.path.dirname(__file__)
 rt_icon_path = "assets/icons/Realtalk_transparent.png"
@@ -12,6 +14,8 @@ KEYWORDS = ["hallo", "exit", "hilfe"]
 
 class MenuBarApp(rumps.App):
     def __init__(self):
+        self.notification_queue = queue.Queue()
+
         self.start_item = rumps.MenuItem("Start Listening", callback=self.start_listening)
         self.stop_item = rumps.MenuItem("Stop Listening", callback=None)
 
@@ -30,6 +34,10 @@ class MenuBarApp(rumps.App):
         self.thread = None
         self.title = "🔴 Paused..."
         self.stop_event = threading.Event()
+
+        # Startet alle 0.5s und prüft auf neue Events
+        self.timer = rumps.Timer(self.check_queue, 0.5)
+        self.timer.start()
 
     def start_listening(self, _):
         self.listening = True
@@ -58,8 +66,27 @@ class MenuBarApp(rumps.App):
 
     def update_status(self, status: bool, keyword: str = ""):
         if status:
-            # Das geht so nicht, da update_status aus speech.py aus aufgerufen wird. rumps.alert geht nur aus der main raus
-            rumps.alert("RealTalk", f"Du hast '{keyword}' gesagt.")
+            print(f"🎧 KEYWORD erkannt → Flash vorbereiten: {keyword}")
+            self.notification_queue.put(keyword)
+
+    def check_queue(self, _):
+        while not self.notification_queue.empty():
+            keyword = self.notification_queue.get()
+            print(f"📢 FLASH-ALERT für Schlüsselwort: {keyword}")
+            self.red_flash()
+
+    def red_flash(self, duration=0.5):
+        def show_overlay():
+            root = tk.Tk()
+            root.attributes('-fullscreen', True)
+            root.attributes('-topmost', True)
+            root.attributes('-alpha', 0.6)
+            root.configure(bg='red')
+            root.after(int(duration * 1000), root.destroy)
+            root.mainloop()
+
+        Thread(target=show_overlay).start()
+
 
 if __name__ == "__main__":
-     MenuBarApp().run()
+    MenuBarApp().run()

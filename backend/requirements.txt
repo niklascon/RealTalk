@@ -12,3 +12,4 @@ rumps
 pyobjc
 openai-whisper
 ffmpeg-python
+torch
