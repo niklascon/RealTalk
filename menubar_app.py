@@ -2,8 +2,6 @@ import rumps
 import os
 import threading
 import queue
-import tkinter as tk
-from threading import Thread
 from common.speech import recognize_speech
 
 script_path = os.path.dirname(__file__)
@@ -73,19 +71,13 @@ class MenuBarApp(rumps.App):
         while not self.notification_queue.empty():
             keyword = self.notification_queue.get()
             print(f"📢 FLASH-ALERT für Schlüsselwort: {keyword}")
-            self.red_flash()
 
-    def red_flash(self, duration=0.5):
-        def show_overlay():
-            root = tk.Tk()
-            root.attributes('-fullscreen', True)
-            root.attributes('-topmost', True)
-            root.attributes('-alpha', 0.6)
-            root.configure(bg='red')
-            root.after(int(duration * 1000), root.destroy)
-            root.mainloop()
-
-        Thread(target=show_overlay).start()
+            print(f"[DEBUG] Current thread: {threading.current_thread().name}")
+            rumps.notification(
+                title="🎤 RealTalk",
+                subtitle="Sprachbefehl erkannt",
+                message=f"Schlüsselwort: '{keyword}' erkannt!"
+            )
 
 
 if __name__ == "__main__":
