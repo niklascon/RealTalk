@@ -73,11 +73,14 @@ class MenuBarApp(rumps.App):
             print(f"📢 FLASH-ALERT für Schlüsselwort: {keyword}")
 
             print(f"[DEBUG] Current thread: {threading.current_thread().name}")
+            '''
             rumps.notification(
                 title="🎤 RealTalk",
                 subtitle="Sprachbefehl erkannt",
                 message=f"Schlüsselwort: '{keyword}' erkannt!"
             )
+            '''
+            rumps.alert("Hat geklappt")
 
 
 if __name__ == "__main__":
