@@ -1,8 +1,8 @@
-import rumps # type: ignore 
+import rumps
 import os
 import threading
+import queue
 from common.speech import recognize_speech
-
 
 script_path = os.path.dirname(__file__)
 rt_icon_path_listening = "assets/icons/Realtalk_transparent_green.png"
@@ -25,6 +25,8 @@ KEYWORDS = ["exit", "scam", "scammen", "betrug", "passwort", "passwörter", "dat
 
 class MenuBarApp(rumps.App):
     def __init__(self):
+        self.notification_queue = queue.Queue()
+
         self.start_item = rumps.MenuItem("Start Listening", callback=self.start_listening)
         self.stop_item = rumps.MenuItem("Stop Listening", callback=None)
 
@@ -41,6 +43,10 @@ class MenuBarApp(rumps.App):
         self.listening = False
         self.thread = None
         self.stop_event = threading.Event()
+
+        # Startet alle 0.5s und prüft auf neue Events
+        self.timer = rumps.Timer(self.check_queue, 0.5)
+        self.timer.start()
 
     def start_listening(self, _):
         self.listening = True
@@ -69,8 +75,29 @@ class MenuBarApp(rumps.App):
 
     def update_status(self, status: bool, keyword: str = ""):
         if status:
-            # Das geht so nicht, da update_status aus speech.py aus aufgerufen wird. rumps.alert geht nur aus der main raus
-            rumps.alert("RealTalk", f"Du hast '{keyword}' gesagt.")
+            print(f"🎧 KEYWORD erkannt → Flash vorbereiten: {keyword}")
+            self.notification_queue.put(keyword)
+
+    def check_queue(self, _):
+        while not self.notification_queue.empty():
+            keyword = self.notification_queue.get()
+            print(f"📢 FLASH-ALERT für Schlüsselwort: {keyword}")
+
+            print(f"[DEBUG] Current thread: {threading.current_thread().name}")
+            '''
+            rumps.notification(
+                title="🎤 RealTalk",
+                subtitle="Sprachbefehl erkannt",
+                message=f"Schlüsselwort: '{keyword}' erkannt!"
+            )
+            '''
+            rumps.alert(
+                title="RealTalk",
+                message="RealTalk has identified suspicious voice activity. Please end the call immediately and notify your security team.",
+                ok="Acknowledge",
+                icon_path=rt_icon_path
+            )
+
 
 if __name__ == "__main__":
-     MenuBarApp().run()
+    MenuBarApp().run()
