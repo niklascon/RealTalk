@@ -2,6 +2,7 @@ import rumps
 import os
 import threading
 import queue
+import keyboard
 from common.speech import recognize_speech
 
 script_path = os.path.dirname(__file__)
@@ -18,7 +19,7 @@ KEYWORDS = ["exit", "scam", "scammen", "betrug", "passwort", "passwörter", "gel
 "computer", "wartung", "sicherheitslücke", "hacker", "viren", "trojaner", "zugang geben", "daten", "ausweis", "personalausweis", "führerschein",
 "kopie", "scan", "hochladen", "identitätsnachweis", "unterlagen", "persönlich", "vertraulich", "polizei", "kripo", "staatsanwaltschaft", "gericht", "finanzamt", "bundesbank", "ezb", "zoll", "behörde",
 "regierung", "botschaft", "konsulat", "ermittlung", "verhör", "anzeige", "aktenzeichen", "anwalt", "notar", "beamter", "bankmitarbeiter", "berater", "microsoft", "it-support", "telekom", "versicherer",
-"post", "inkasso", "stromanbieter", "internetprovider", "kundenservice", "kundendienst", "servicecenter", "dringlichkeit", "sofort", "wichtig", "vertraulich", "zeitdruck", "frist", "mahnbescheid", "pfändung",
+"post", "inkasso", "stromanbieter", "internetprovider", "dringlichkeit", "sofort", "wichtig", "vertraulich", "zeitdruck", "frist", "mahnbescheid", "pfändung",
 "geheim", "verheimlichen", "nicht erzählen", "keinem sagen", "nur du", "vertraue mir", "niemandem mitteilen", "dhl", "ups", "gls", "sendung", "paket", "zustellung", "versand", "lieferung", "versandkosten", "tracking",
 "lieferprobleme", "paketdienst", "link", "verifizieren", "konto bestätigen",
 "zahlung autorisieren", "weiterleitung", "eingabemaske", "anmeldung", "captcha", "online-zugang", "whatsapp", "telegram", "nachricht", "sms", "code erhalten", "code weiterleiten", "neue nummer", "alte nummer verloren",
@@ -40,6 +41,8 @@ class MenuBarApp(rumps.App):
                 None,
             ]
         )
+
+        self.register_hotkey()
 
         self.listening = False
         self.thread = None
@@ -99,6 +102,14 @@ class MenuBarApp(rumps.App):
                 icon_path=rt_icon_path_white
             )
 
+    def register_hotkey(self):
+        # Setzt globalen Hotkey auf z.B. STRG + ALT + B
+        print("setze hotkey")
+        keyboard.add_hotkey('b', self.trigger_manual_alert)
+
+    def trigger_manual_alert(self):
+        print("[MANUELLER ALERT] via Hotkey ausgelöst.")
+        self.notification_queue.put("🛑 MANUELLER ALERT")
 
 if __name__ == "__main__":
     MenuBarApp().run()
