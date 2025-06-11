@@ -80,7 +80,12 @@ class MenuBarApp(rumps.App):
                 message=f"Schlüsselwort: '{keyword}' erkannt!"
             )
             '''
-            rumps.alert("Hat geklappt")
+            rumps.alert(
+                title="RealTalk",
+                message="RealTalk has identified suspicious voice activity. Please end the call immediately and notify your security team.",
+                ok="Acknowledge",
+                icon_path=rt_icon_path
+            )
 
 
 if __name__ == "__main__":
