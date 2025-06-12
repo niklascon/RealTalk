@@ -6,8 +6,8 @@ import keyboard
 from common.speech import recognize_speech
 
 script_path = os.path.dirname(__file__)
-rt_icon_path_listening = "assets/icons/RealTalk_transparent_green.png"
-rt_icon_path_paused = "assets/icons/RealTalk_transparent_red.png"
+rt_icon_path_listening = "assets/icons/RealTalk_transparent_white_green.png"
+rt_icon_path_paused = "assets/icons/RealTalk_transparent_white_red.png"
 rt_icon_path_white = "assets/icons/RealTalk_transparent_white.png"
 rt_icon = os.path.join(script_path, rt_icon_path_paused)
 
