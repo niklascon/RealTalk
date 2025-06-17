@@ -88,13 +88,7 @@ class MenuBarApp(rumps.App):
             print(f"📢 FLASH-ALERT für Schlüsselwort: {keyword}")
 
             print(f"[DEBUG] Current thread: {threading.current_thread().name}")
-            '''
-            rumps.notification(
-                title="🎤 RealTalk",
-                subtitle="Sprachbefehl erkannt",
-                message=f"Schlüsselwort: '{keyword}' erkannt!"
-            )
-            '''
+
             rumps.alert(
                 title="RealTalk",
                 message="RealTalk has identified suspicious voice activity. Please end the call immediately and notify your security team.",
