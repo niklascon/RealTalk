@@ -12,7 +12,7 @@ rt_icon_path_white = "assets/icons/RealTalk_transparent_white.png"
 rt_icon = os.path.join(script_path, rt_icon_path_paused)
 
 KEYWORDS = ["exit", "scam", "scammen", "betrug", "passwort", "passwörter", "geld", "money", "finanzen",
-"enkel", "enkelkind", "kind", "konto", "kontonummer", "iban", "bic", "bank", "überweisung", "onlinebanking", "bankdaten", "bankverbindung",
+"enkel", "enkelkind", "kind", "kontonummer", "iban", "bic", "bank", "überweisung", "onlinebanking", "bankdaten", "bankverbindung",
 "zugangsdaten", "tan", "photo-tan", "push-tan", "chip-tan", "banking-app", "bankkonto", "sicherheitscode", "pin", "passwort", "passwörter", "login", "zugang", "authentifizierung", "verifizierung", "identität",
 "zugriffsrechte", "sicherheitsfrage", "freigabe", "sperrung", "entsperren", "token", "code", "sms-code", "enkel", "enkelkind", "oma", "opa", "kind", "tochter", "sohn", "verwandt", "familie", "dringend",
 "unfall", "verhaftet", "kaution", "geld", "überweisen", "zahlung", "zahlen", "betrag", "scam", "scammen", "betrug", "betrüger", "kriminell", "abzocke", "erpressung", "dringend", "sofort", "gefahr", "notfall", "schaden", "verlust", "support", "it-abteilung", "technik", "update", "fernzugriff", "teamviewer", "anydesk", "zugriff", "installieren",
